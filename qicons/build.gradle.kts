@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.secrets.gradle.plugin)
+    id("maven-publish")
 }
 
 android {
@@ -28,6 +30,39 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
+    }
+}
+
+secrets {
+    propertiesFileName = "secrets.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
+}
+
+val githubUserName = project.findProperty("GITHUB_USER") as String? ?: ""
+val githubRepository = project.findProperty("GITHUB_REPOSITORY") as String? ?: ""
+val githubAccessToken = project.findProperty("GITHUB_ACCESS_TOKEN") as String? ?: ""
+
+publishing {
+    publications {
+        create<MavenPublication>("aar") {
+            groupId = "com.quorso"
+            artifactId = "icons"
+            version = "1.0.0"
+
+            // Specify the AAR file as the artifact
+            artifact("${layout.buildDirectory.get()}/outputs/aar/${project.name}-release.aar") {
+                extension = "aar"
+            }
+        }
+    }
+    repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/$githubRepository")
+            credentials {
+                username = githubUserName
+                password = githubAccessToken
+            }
+        }
     }
 }
 
