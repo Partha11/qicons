@@ -1,7 +1,8 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.secrets.gradle.plugin)
     id("maven-publish")
 }
 
@@ -33,14 +34,16 @@ android {
     }
 }
 
-secrets {
-    propertiesFileName = "secrets.properties"
-    defaultPropertiesFileName = "local.defaults.properties"
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(localPropertiesFile.inputStream())
+    }
 }
 
-val githubUserName = project.findProperty("GITHUB_USER") as String? ?: ""
-val githubRepository = project.findProperty("GITHUB_REPOSITORY") as String? ?: ""
-val githubAccessToken = project.findProperty("GITHUB_ACCESS_TOKEN") as String? ?: ""
+val githubUserName = localProperties.getProperty("github.username") ?: ""
+val githubRepository = localProperties.getProperty("github.repository") ?: ""
+val githubAccessToken = localProperties.getProperty("github.token") ?: ""
 
 publishing {
     publications {
@@ -49,7 +52,6 @@ publishing {
             artifactId = "icons"
             version = "1.0.0"
 
-            // Specify the AAR file as the artifact
             artifact("${layout.buildDirectory.get()}/outputs/aar/${project.name}-release.aar") {
                 extension = "aar"
             }
