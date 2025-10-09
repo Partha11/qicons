@@ -45,24 +45,24 @@ val githubUserName = localProperties.getProperty("github.username") ?: ""
 val githubRepository = localProperties.getProperty("github.repository") ?: ""
 val githubAccessToken = localProperties.getProperty("github.token") ?: ""
 
-publishing {
-    publications {
-        create<MavenPublication>("aar") {
-            groupId = "com.quorso"
-            artifactId = "icons"
-            version = "1.0.0"
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
 
-            artifact("${layout.buildDirectory.get()}/outputs/aar/${project.name}-release.aar") {
-                extension = "aar"
+                groupId = "com.quorso"
+                artifactId = "icons"
+                version = "1.0.2"
             }
         }
-    }
-    repositories {
-        maven {
-            url = uri("https://maven.pkg.github.com/$githubRepository")
-            credentials {
-                username = githubUserName
-                password = githubAccessToken
+        repositories {
+            maven {
+                url = uri("https://maven.pkg.github.com/$githubRepository")
+                credentials {
+                    username = githubUserName
+                    password = githubAccessToken
+                }
             }
         }
     }
